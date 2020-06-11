@@ -1,0 +1,6 @@
+mylib/*
+results/*
+__pycache__/*
+*.txt
+*.pyc
+
