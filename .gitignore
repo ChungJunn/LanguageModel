@@ -3,4 +3,5 @@ results/*
 __pycache__/*
 *.txt
 *.pyc
-
+mylib/*
+temp*

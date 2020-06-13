@@ -23,6 +23,17 @@ def read_dict(dic_file, const_id=None):
     else:
         src_dict2['PAD'] = const_id.PAD
         src_dict2['<s>'] = const_id.BOS
+    '''    
+    dl = [] #dict list
+    for kk, vv in src_dict2.items():
+        dl.append((vv, kk))
+
+    dl = sorted(dl, key=lambda xs: xs[0])
+ 
+    with open('./wikitext-2-raw-dict.txt', 'wt') as fp:
+        for item in dl:
+            fp.write(item[1] + ': ' + str(item[0]) + '\n')
+    '''
     return src_dict2
 
 class TextIterator:
@@ -90,7 +101,7 @@ class TextIterator:
                 if len(self.x_buf) >= self.batch_size*self.ahead:
                     break
 
-            self.buf_remain = self.ahead # TODO I don't understand
+            self.buf_remain = self.ahead
 
             len_xs = [(len(x), x) for x in self.x_buf]
             sorted_len_xs = sorted(len_xs, key=lambda xs: xs[0])
@@ -118,7 +129,6 @@ class TextIterator:
 
         x_data = np.ones((maxlen_x, n_samples)).astype('int64')*self.const_id.PAD # EOS_token = 1
         x_mask = np.zeros((maxlen_x, n_samples)).astype('float32')
-        #import pdb;pdb.set_trace()
         for idx, s_x in enumerate(seqs_x): # sentence is given as list of strings
             x_data[1:lengths_x[idx]+1, idx] = s_x
             x_data[0, idx] = self.const_id.BOS
@@ -139,11 +149,10 @@ if __name__ == "__main__":
 
     train_iter = TextIterator(src_file, src_dict,
                          batch_size=3, maxlen=300, 
-                         ahead=5, resume_num=0, mask_pos=False, const_id=Const)
+                         ahead=6, resume_num=0, mask_pos=False, const_id=Const)
     
     idx = 0
     for x, xm, tmp1, ii in train_iter:
-        import pdb; pdb.set_trace()
         print ('==============================')
         print (len(x))
         print (x)

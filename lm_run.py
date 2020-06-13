@@ -1,5 +1,5 @@
 import argparse
-
+import neptune
 from lm_main import train_model
 
 parser = argparse.ArgumentParser(description="", formatter_class=argparse.RawTextHelpFormatter)
@@ -31,9 +31,22 @@ parser.add_argument("--train", type=int, default=0)
 parser.add_argument("--trans", type=int, default=0)
 parser.add_argument("--use_best", type=int, default=0)
 parser.add_argument("--beam_width", type=int, default=1)
+parser.add_argument("--init", type=str, default='')
+parser.add_argument("--name", type=str, default='')
+parser.add_argument("--tag", type=str, default='')
+parser.add_argument("--val_start", type=int, default='')
+parser.add_argument("--patience", type=int, default='')
+
 
 args = parser.parse_args()
 print(args)
+
+params = vars(args)
+
+neptune.init(args.init)
+exp = neptune.create_experiment(name=args.name, params=params)
+neptune.append_tag(args.tag)
+args.exp_id = exp._id
 
 # training
 if args.train:
@@ -41,8 +54,9 @@ if args.train:
     with open(args.save_dir+'/'+args.model_file+'.args', 'w') as fp:
         for key in vars(args):
             fp.write(key + ': ' + str(getattr(args, key)) + '\n')
-    train_model(args)
+    train_model(args, neptune)
 
+'''
 if args.trans:
     print ('Translating...')
     bleu_score = translate_file(args)
@@ -50,3 +64,4 @@ if args.trans:
         print ('bleu_score', bleu_score)
 
 print ('Done')
+'''

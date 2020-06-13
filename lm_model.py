@@ -43,8 +43,8 @@ class LM(nn.Module):
         return hidden, cell
         
     def forward(self, data, mask=None):
-        x_data = data[:-1]
-        y_data = data[1:]
+        x_data = data[:-1] # create target  
+        y_data = data[1:] # create labels
         x_data = CudaVariable(torch.LongTensor(x_data))
         y_data = CudaVariable(torch.LongTensor(y_data))
 
@@ -57,25 +57,27 @@ class LM(nn.Module):
             x_mask = CudaVariable(torch.FloatTensor(x_mask))
             y_mask = CudaVariable(torch.FloatTensor(y_mask))
 
-        Tx, Bn = x_data.size()
-        x_emb = self.src_emb(x_data.view(Tx*Bn,1)) # Tx Bn
-        x_emb = x_emb.view(Tx,Bn,-1)
+        Tx, Bn = x_data.size() 
+        x_emb = self.src_emb(x_data.view(Tx*Bn,1)) # Tx Bn #TODO: study about view function
+        x_emb = x_emb.view(Tx,Bn,-1) # forward through embedding and restore
+        # TODO embeding output Tx Bn dim_wemb
 
-        ht = CudaVariable(torch.zeros(Bn, self.dim_enc))
+        ht = CudaVariable(torch.zeros(Bn, self.dim_enc)) # initialize the hidden states
         ct = CudaVariable(torch.zeros(Bn, self.dim_enc))
         loss = 0
         criterion = nn.NLLLoss(reduce=False)
         #criterion = nn.CrossEntropyLoss(reduce=False)
+
         for xi in range(Tx):
-            ht, ct = self.rnn_enc.step(x_emb[xi,:,:], ht, ct, x_m=x_mask[xi])
-            output = self.readout(ht)
-            logit = self.dec(output)
-            probs = F.log_softmax(logit, dim=1)
+            ht, ct = self.rnn_enc.step(x_emb[xi,:,:], ht, ct, x_m=x_mask[xi]) # Bn dim_hidden
+            output = self.readout(ht) # Bn dim_wemb 
+            logit = self.dec(output) # Bn n_vocab
+            probs = F.log_softmax(logit, dim=1) # Bn
             #topv, yt = probs.topk(1)
 
-            loss_t = criterion(probs, y_data[xi])
+            loss_t = criterion(probs, y_data[xi]) # Bn vs. Bn
             if y_mask is not None:
-                loss += torch.sum(loss_t*y_mask[xi])
+                loss += torch.sum(loss_t*y_mask[xi]) # mask it and obtain sum
             else:
                 loss += torch.sum(loss_t)
 
