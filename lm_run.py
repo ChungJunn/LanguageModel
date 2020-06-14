@@ -4,7 +4,6 @@ from lm_main import train_model
 
 parser = argparse.ArgumentParser(description="", formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("--save_dir", type=str, default='')
-parser.add_argument("--model_file", type=str, default='')
 parser.add_argument("--train_data_file", type=str, default='')
 parser.add_argument("--valid_data_file", type=str, default='')
 parser.add_argument("--test_data_file", type=str, default='')
@@ -37,6 +36,7 @@ parser.add_argument("--tag", type=str, default='')
 parser.add_argument("--val_start", type=int, default='')
 parser.add_argument("--patience", type=int, default='')
 parser.add_argument("--loss_reduction", type=str, default='')
+parser.add_argument("--num_layers", type=int, help='lstm layers', default='')
 
 args = parser.parse_args()
 print(args)
@@ -53,9 +53,6 @@ args.exp_id = exp._id
 # training
 if args.train:
     print ('Training...')
-    with open(args.save_dir+'/'+args.model_file+'.args', 'w') as fp:
-        for key in vars(args):
-            fp.write(key + ': ' + str(getattr(args, key)) + '\n')
     train_model(args, neptune)
 
 '''

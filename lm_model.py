@@ -104,7 +104,7 @@ class LM2(nn.Module):
         self.max_length = args.max_length  
 
         self.src_emb = myEmbedding(args.data_words_n, args.dim_wemb) # src_emb
-        self.rnn_enc = nn.LSTM(args.dim_wemb, args.dim_enc, batch_first=False, bidirectional=False)
+        self.rnn_enc = nn.LSTM(args.dim_wemb, args.dim_enc, batch_first=False, bidirectional=False, num_layers=args.num_layers, dropout=args.dropout_p)
         self.dropout = nn.Dropout(p=args.dropout_p)
 
         self.readout = myLinear(args.dim_enc, args.dim_wemb)
