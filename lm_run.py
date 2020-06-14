@@ -36,7 +36,7 @@ parser.add_argument("--name", type=str, default='')
 parser.add_argument("--tag", type=str, default='')
 parser.add_argument("--val_start", type=int, default='')
 parser.add_argument("--patience", type=int, default='')
-
+parser.add_argument("--loss_reduction", type=str, default='')
 
 args = parser.parse_args()
 print(args)
@@ -46,7 +46,9 @@ params = vars(args)
 neptune.init(args.init)
 exp = neptune.create_experiment(name=args.name, params=params)
 neptune.append_tag(args.tag)
+
 args.exp_id = exp._id
+#args.exp_id = 'abc' # for testing  
 
 # training
 if args.train:

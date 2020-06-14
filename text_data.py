@@ -23,17 +23,7 @@ def read_dict(dic_file, const_id=None):
     else:
         src_dict2['PAD'] = const_id.PAD
         src_dict2['<s>'] = const_id.BOS
-    '''    
-    dl = [] #dict list
-    for kk, vv in src_dict2.items():
-        dl.append((vv, kk))
-
-    dl = sorted(dl, key=lambda xs: xs[0])
- 
-    with open('./wikitext-2-raw-dict.txt', 'wt') as fp:
-        for item in dl:
-            fp.write(item[1] + ': ' + str(item[0]) + '\n')
-    '''
+    
     return src_dict2
 
 class TextIterator:
@@ -143,9 +133,9 @@ class TextIterator:
 
 if __name__ == "__main__":
     import nmt_const as Const
-    base_dir = '/home/chl/data/wikitext-2-raw'
-    src_file = base_dir + '/wiki.test.raw'
-    src_dict = base_dir + '/wiki.train.raw.voc.pkl'
+    base_dir = '/home/chl/data/ptb'
+    src_file = base_dir + '/ptb.test.txt'
+    src_dict = base_dir + '/ptb.train.txt.pkl'
 
     train_iter = TextIterator(src_file, src_dict,
                          batch_size=3, maxlen=300, 

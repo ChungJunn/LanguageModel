@@ -19,6 +19,7 @@ class LM(nn.Module):
         self.dim_wemb = args.dim_wemb # dimension of word embedding
         self.max_length = args.max_length # 
         self.rnn_name = args.rnn_name # 
+        self.loss_reduction = args.loss_reduction
 
         self.src_emb = myEmbedding(args.data_words_n, args.dim_wemb) # src_emb
 
@@ -65,24 +66,32 @@ class LM(nn.Module):
         ht = CudaVariable(torch.zeros(Bn, self.dim_enc)) # initialize the hidden states
         ct = CudaVariable(torch.zeros(Bn, self.dim_enc))
         loss = 0
-        criterion = nn.NLLLoss(reduce=False)
+        criterion = nn.NLLLoss(reduction='none')
         #criterion = nn.CrossEntropyLoss(reduce=False)
+        denum=0
 
         for xi in range(Tx):
-            ht, ct = self.rnn_enc.step(x_emb[xi,:,:], ht, ct, x_m=x_mask[xi]) # Bn dim_hidden
-            output = self.readout(ht) # Bn dim_wemb 
-            logit = self.dec(output) # Bn n_vocab
-            probs = F.log_softmax(logit, dim=1) # Bn
+            ht, ct = self.rnn_enc.step(x_emb[xi,:,:], ht, ct, x_m=x_mask[xi]) # Bn dim_enc  
+            output = self.readout(ht) # Bn dim_wemb - check 
+            logit = self.dec(output) # Bn n_vocab - check
+            probs = F.log_softmax(logit, dim=1) # Bn n_vocab - check
             #topv, yt = probs.topk(1)
 
-            loss_t = criterion(probs, y_data[xi]) # Bn vs. Bn
-            if y_mask is not None:
-                loss += torch.sum(loss_t*y_mask[xi]) # mask it and obtain sum
-            else:
-                loss += torch.sum(loss_t)
+            loss_t = criterion(probs, y_data[xi]) # Bn n_vocab vs. Bn -> Bn
+            
+            if self.loss_reduction == 'org': # Original: prof's way (average within time-step first then average across batches)
+                if y_mask is not None:
+                    loss += torch.mean(loss_t*y_mask[xi]) # Bn -> 1 
+                else:
+                    loss += torch.mean(loss_t)
 
-        #if y_mask is not None:
-        #    return loss/Bn
-        #else:
-        return loss/Bn
-
+            if self.loss_reduction == 'con': # Conventional: average across time-step and batches
+                if y_mask is not None:
+                    loss += torch.sum(loss_t*y_mask[xi]) # Bn -> 1 
+                else:
+                    loss += torch.sum(loss_t)
+       
+        if self.loss_reduction == 'org': denum = Bn
+        if self.loss_reduction == 'con': denum = torch.sum(y_mask).item()
+        
+        return loss / denum

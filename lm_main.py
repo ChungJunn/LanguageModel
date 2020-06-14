@@ -80,6 +80,7 @@ def train_model(args, neptune):
             loss_total = 0
             print('%s: %d iters - %.4f %s' % (args.name + args.tag, iloop, loss_avg, timeSince(start)))
             neptune.log_metric('train loss', loss_avg)
+            neptune.log_metric('train ppl', math.exp(loss_avg)) 
 
         if iloop >= args.val_start and iloop % args.valid_every == 0:
             val_loss = eval_model(model, args.valid_data_file, args)
@@ -102,4 +103,5 @@ def train_model(args, neptune):
                 bfp.write(str(iloop) + ' val: ' + str(val_loss) + ' test: ' + str(test_loss) + '\n')
             print ('valid loss', val_loss, 'test_loss', test_loss)
             neptune.log_metric('valid loss', val_loss)
+            neptune.log_metric('valid ppl', math.exp(val_loss)) 
 
