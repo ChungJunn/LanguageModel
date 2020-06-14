@@ -1,23 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals, print_function, division
-from io import open
-import os
 import time
 import math
-import numpy as np
-import six; from six.moves import cPickle as pkl
 
 import torch 
 import torch.nn as nn
 from torch import optim
-import torch.nn.functional as F
 
-from lm_model import LM
+from lm_model import LM, LM2
 from text_data import TextIterator
-
-import re
-from subprocess import Popen, PIPE
 
 from mylib.utils import timeSince, ids2words, unbpe
 import nmt_const as Const
@@ -62,7 +54,8 @@ def train_model(args, neptune):
     loss_total = 0  # Reset every args.print_every
 
     # model 
-    model = LM(args=args).to(device)
+    #model = LM(args=args).to(device)
+    model = LM2(args=args).to(device)
 
     # optimizer
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -84,7 +77,6 @@ def train_model(args, neptune):
 
         if iloop >= args.val_start and iloop % args.valid_every == 0:
             val_loss = eval_model(model, args.valid_data_file, args)
-            test_loss = eval_model(model, args.test_data_file, args)
 
             if iloop > args.val_start: 
                 if best_loss is None or val_loss <= best_loss: 
@@ -99,9 +91,10 @@ def train_model(args, neptune):
                     print('Early Stopping')
                     break 
 
-            with open(file_name+'.loss', 'a') as bfp:
-                bfp.write(str(iloop) + ' val: ' + str(val_loss) + ' test: ' + str(test_loss) + '\n')
             print ('valid loss', val_loss, 'test_loss', test_loss)
             neptune.log_metric('valid loss', val_loss)
             neptune.log_metric('valid ppl', math.exp(val_loss)) 
 
+        test_loss = eval_model(model, args.test_data_file, args)
+        neptune.log_metric('test loss', test_loss)
+        neptune.log_metric('test ppl', math.exp(test_loss)) 

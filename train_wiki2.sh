@@ -20,8 +20,8 @@ PATIENCE=5
 LOSS_REDUCTION='con'
 
 INIT='cjlee/LanguageModel'
-NAME='LearningRate-Adam'
-TAG='0-0002'
+NAME='test-nn-lstm'
+TAG='adam0-0002'
 ##########################
 
 DICT1=$TRAIN_FILE'.voc.pkl'
