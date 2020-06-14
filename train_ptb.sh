@@ -1,8 +1,6 @@
 BPE=1
 
-RNN=$2
-RNN_FF=$3
-MAX_LENGTH=$4
+MAX_LENGTH=$2
 
 DATA_NUM=2
 DIM_WEMB=200
@@ -18,10 +16,11 @@ LR=0.0002
 OPTIMIZER='adam'
 PATIENCE=5
 LOSS_REDUCTION='con'
+DROPOUT_P=0.5
 
 INIT='cjlee/LanguageModel'
-NAME='PTB-LearningRate-Adam'
-TAG='0-0002'
+NAME='PTB-test-dropout'
+TAG='0-5'
 ##########################
 
 DICT1=$TRAIN_FILE'.pkl'
@@ -29,7 +28,7 @@ SAVE_DIR='./results'
 
 MODEL_FILE='lm.ptb.'$RNN'.rnn_ff'$RNN_FF'.'$MAX_LENGTH'.'$DIM_WEMB'.'$DIM_ENC'.gpu'$1
 
-CUDA_VISIBLE_DEVICES=$1 python3 lm_run.py --train=1 --rnn_name=$RNN --rnn_ff=$RNN_FF \
+CUDA_VISIBLE_DEVICES=$1 python3 lm_run.py --train=1 \
         --save_dir=$SAVE_DIR --model_file=$MODEL_FILE \
         --train_data_file=$TRAIN_FILE --valid_data_file=$VALID_FILE --test_data_file=$TEST_FILE \
         --dim_wemb=$DIM_WEMB --dim_enc=$DIM_ENC \

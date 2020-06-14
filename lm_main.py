@@ -30,6 +30,7 @@ def train(model, optimizer, data, mask, args):
     return loss.item()
 
 def eval_model(model, data_file, args):
+    model.eval() 
     torch.no_grad()
     valid_iter = TextIterator(data_file, args.data_dict,
                          batch_size=1, maxlen=args.max_length,
@@ -77,6 +78,7 @@ def train_model(args, neptune):
 
         if iloop >= args.val_start and iloop % args.valid_every == 0:
             val_loss = eval_model(model, args.valid_data_file, args)
+            model.train()
 
             if iloop > args.val_start: 
                 if best_loss is None or val_loss <= best_loss: 
@@ -91,10 +93,10 @@ def train_model(args, neptune):
                     print('Early Stopping')
                     break 
 
-            print ('valid loss', val_loss, 'test_loss', test_loss)
+            print ('valid loss', val_loss)
             neptune.log_metric('valid loss', val_loss)
             neptune.log_metric('valid ppl', math.exp(val_loss)) 
 
-        test_loss = eval_model(model, args.test_data_file, args)
-        neptune.log_metric('test loss', test_loss)
-        neptune.log_metric('test ppl', math.exp(test_loss)) 
+    test_loss = eval_model(model, args.test_data_file, args)
+    neptune.log_metric('test loss', test_loss)
+    neptune.log_metric('test ppl', math.exp(test_loss)) 

@@ -105,6 +105,7 @@ class LM2(nn.Module):
 
         self.src_emb = myEmbedding(args.data_words_n, args.dim_wemb) # src_emb
         self.rnn_enc = nn.LSTM(args.dim_wemb, args.dim_enc, batch_first=False, bidirectional=False)
+        self.dropout = nn.Dropout(p=args.dropout_p)
 
         self.readout = myLinear(args.dim_enc, args.dim_wemb)
         self.dec = myLinear(args.dim_wemb, args.data_words_n)
@@ -125,7 +126,9 @@ class LM2(nn.Module):
             y_mask = mask[1:]; y_mask = CudaVariable(torch.FloatTensor(y_mask))
 
         Tx, Bn = x_data.size() 
-        x_emb = self.src_emb(x_data.view(Tx*Bn,1)) 
+        x_emb = self.src_emb(x_data.view(Tx*Bn,1))
+        x_emb = self.dropout(x_emb) 
+ 
         x_emb = x_emb.view(Tx,Bn,-1) 
 
         ht = CudaVariable(torch.zeros(Bn, self.dim_enc)) 
@@ -133,6 +136,7 @@ class LM2(nn.Module):
         criterion = nn.NLLLoss(reduction='none')
 
         ht, ct = self.rnn_enc(x_emb)
+        ht = self.dropout(ht) 
     
         output = self.readout(ht) # Bn dim_wemb 
 
