@@ -2,7 +2,7 @@ DATA=$2
 MAX_LENGTH=150
 
 DATA_NUM=2
-DIM_WEMB=200
+DIM_WEMB=300
 DIM_ENC=300
 
 if [ $DATA == 'wiki2' ]
@@ -27,12 +27,12 @@ OPTIMIZER='adam'
 PATIENCE=3
 LOSS_REDUCTION='con'
 DROPOUT_P=0.5
-NUM_LAYERS=2
+NUM_LAYERS=1
 BATCH_SIZE=64
 
 INIT='cjlee/LanguageModel'
 NAME=$DATA'-learning-rate'
-TAG='0-0001'
+TAG='0-01'
 ##########################
 
 SAVE_DIR='./results'
@@ -43,4 +43,4 @@ CUDA_VISIBLE_DEVICES=$1 python3 lm_run.py --train=1 \
         --data_dict=$DICT1 --max_length=$MAX_LENGTH --batch_size=$BATCH_SIZE\
         --init=$INIT --name=$NAME --tag=$TAG --loss_reduction=$LOSS_REDUCTION \
         --learning_rate=$LR --optimizer=$OPTIMIZER --patience=$PATIENCE --num_layers=$NUM_LAYERS \
-        --print_every=100 --valid_every=1000 --val_start=5
+        --prnt_every=100 --valid_every=1000 --val_start=5

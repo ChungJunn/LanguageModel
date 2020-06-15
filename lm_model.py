@@ -104,11 +104,7 @@ class LM2(nn.Module):
         self.max_length = args.max_length  
 
         self.src_emb = myEmbedding(args.data_words_n, args.dim_wemb) # src_emb
-        self.rnn_encs = nn.ModuleList(
-            [nn.LSTM(args.dim_wemb, args.dim_enc, batch_first=False, bidirectional=False)] +
-            [nn.LSTM(args.dim_enc, args.dim_enc, batch_first=False, bidirectional=False)
-                    for i in range(args.num_layers - 1)])
-        
+        self.rnn_enc = nn.LSTM(args.dim_wemb, args.dim_enc, batch_first=False, bidirectional=False) 
         self.dropout = nn.Dropout(p=args.dropout_p)
 
         self.readout = myLinear(args.dim_enc, args.dim_wemb)
@@ -139,19 +135,10 @@ class LM2(nn.Module):
         ct = CudaVariable(torch.zeros(1, Bn, self.dim_enc))
         criterion = nn.NLLLoss(reduction='none')
 
-        htm, ctm = x_emb, (ht, ct) 
-        for i, rnn in enumerate(self.rnn_encs):
-            ht, ct = rnn(htm, ctm)
-            
-            if i > 0: # no skip connection for input embedding
-                htm = ht+htm 
-            else:
-                htm = ht
-
-            htm = self.dropout(htm)
+        ht, ct = self.rnn_enc(x_emb); ht = self.dropout(ht) 
     
-        output = self.readout(htm) # Bn dim_wemb 
-        logit = self.dec(output) # Bn n_vocab
+        output = self.readout(ht); output = self.dropout(output) # Bn dim_wemb 
+        logit = self.dec(output); logit = self.dropout(logit) # Bn n_vocab
 
         probs = F.log_softmax(logit, dim=2) # Bn n_vocab 
         probs = probs.view(-1, probs.size(-1))
