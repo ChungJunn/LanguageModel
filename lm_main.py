@@ -59,7 +59,7 @@ def train_model(args, neptune):
     model = LM2(args=args).to(device)
 
     # optimizer
-    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
+    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate, betas=(0.0, 0.999))
 
     file_name = args.save_dir + '/' + args.exp_id + '.pth'
     bad_counter=0
@@ -89,9 +89,16 @@ def train_model(args, neptune):
                     bad_counter += 1
                     print('bad_counter:', bad_counter)
 
-                if bad_counter > args.patience:
-                    print('Early Stopping')
-                    break 
+                if bad_counter >= args.patience:
+                    flag = False
+                    for param_group in optimizer.param_groups:
+                        param_group['lr'] /= 2.0
+                        
+                        if not flag:
+                           print('lr decayed to {:.4f}'.format(param_group['lr'])) 
+                           flag = True
+
+                    bad_counter = 0
 
             print ('valid loss', val_loss)
             neptune.log_metric('valid loss', val_loss)
