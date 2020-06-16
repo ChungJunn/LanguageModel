@@ -37,6 +37,7 @@ parser.add_argument("--val_start", type=int, default='')
 parser.add_argument("--patience", type=int, default='')
 parser.add_argument("--loss_reduction", type=str, default='')
 parser.add_argument("--num_layers", type=int, help='lstm layers', default='')
+parser.add_argument("--lr_decay", type=float, help='* 1/lr_decay', default='')
 
 args = parser.parse_args()
 print(args)

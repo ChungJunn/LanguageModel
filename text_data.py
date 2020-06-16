@@ -39,6 +39,7 @@ class TextIterator:
         self.data_dict2 = read_dict(data_dict, const_id=const_id)
         self.mask_pos = mask_pos # for Att is All You Need.
 
+
         self.batch_size = batch_size
         self.maxlen = maxlen
 
@@ -133,9 +134,9 @@ class TextIterator:
 
 if __name__ == "__main__":
     import nmt_const as Const
-    base_dir = '/home/chl/data/ptb'
-    src_file = base_dir + '/ptb.test.txt'
-    src_dict = base_dir + '/ptb.train.txt.pkl'
+    base_dir = '/home/chl/data/wikitext-2-raw'
+    src_file = base_dir + '/wiki.test.raw'
+    src_dict = base_dir + '/wiki.train.raw.voc.pkl'
 
     train_iter = TextIterator(src_file, src_dict,
                          batch_size=3, maxlen=300, 
