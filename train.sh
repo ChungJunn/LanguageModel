@@ -22,18 +22,22 @@ then
 fi
 
 ###TODO: must change######
-LR=0.001
+LR=0.01
 OPTIMIZER='adam'
-PATIENCE=3
+PATIENCE=30
 LOSS_REDUCTION='con'
 DROPOUT_P=0.5
 NUM_LAYERS=1
 BATCH_SIZE=64
 LR_DECAY=10
 
+PRINT_EVERY=100
+VALID_EVERY=$3
+VALID_START=1000
+
 INIT='cjlee/LanguageModel'
-NAME=$DATA'-testing-testloss'
-TAG='changed-perplexity'
+NAME=$DATA'-adam-lr'
+TAG='0-01'
 ##########################
 
 SAVE_DIR='./result'
@@ -44,4 +48,4 @@ CUDA_VISIBLE_DEVICES=$1 python3 lm_run.py --train=1 \
         --data_dict=$DICT1 --max_length=$MAX_LENGTH --batch_size=$BATCH_SIZE\
         --init=$INIT --name=$NAME --tag=$TAG --loss_reduction=$LOSS_REDUCTION \
         --learning_rate=$LR --optimizer=$OPTIMIZER --patience=$PATIENCE --num_layers=$NUM_LAYERS \
-        --print_every=100 --valid_every=500 --val_start=5 --lr_decay=$LR_DECAY
+        --print_every=$PRINT_EVERY --valid_every=$VALID_EVERY --val_start=$VALID_START --lr_decay=$LR_DECAY

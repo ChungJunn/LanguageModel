@@ -45,7 +45,7 @@ class LM2(nn.Module):
         x_emb = self.src_emb(x_data.view(Tx*Bn,1))
         x_emb = self.dropout(x_emb) 
  
-        x_emb = x_emb.view(Tx,Bn,-1) 
+        x_emb = x_emb.view(Tx,Bn,-1) # Tx Bn dim_wemb 
 
         ht = CudaVariable(torch.zeros(1, Bn, self.dim_enc)) 
         ct = CudaVariable(torch.zeros(1, Bn, self.dim_enc))
